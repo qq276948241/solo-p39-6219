@@ -35,6 +35,10 @@ class GameManager {
     this.steps = 0;
     this.timeElapsed = 0;
     this.timerInterval = null;
+    this.countdownInterval = null;
+    this.flipTimeout = null;
+    this.matchTimeout = null;
+    this.isSubmitting = false;
     this.gameStarted = false;
     this.canFlip = false;
     this.gameEnded = false;
@@ -112,7 +116,7 @@ class GameManager {
   }
 
   showDifficultySelect() {
-    this.stopTimer();
+    this.stopAllTimers();
     this.elements.difficultyModal.classList.remove('hidden');
     this.elements.resultModal.classList.add('hidden');
     this.elements.board.innerHTML = '';
@@ -163,16 +167,18 @@ class GameManager {
   }
 
   startCountdown() {
+    this.stopAllTimers();
     this.elements.countdown.classList.remove('hidden');
     let count = 2;
     this.elements.countdown.textContent = count;
 
-    const countInterval = setInterval(() => {
+    this.countdownInterval = setInterval(() => {
       count--;
       if (count > 0) {
         this.elements.countdown.textContent = count;
       } else {
-        clearInterval(countInterval);
+        clearInterval(this.countdownInterval);
+        this.countdownInterval = null;
         this.elements.countdown.classList.add('hidden');
         this.flipAllDown();
       }
@@ -184,7 +190,8 @@ class GameManager {
       card.classList.remove('flipped');
     });
 
-    setTimeout(() => {
+    this.flipTimeout = setTimeout(() => {
+      this.flipTimeout = null;
       this.canFlip = true;
       this.gameStarted = true;
       this.startTimer();
@@ -192,17 +199,29 @@ class GameManager {
   }
 
   startTimer() {
-    this.stopTimer();
+    this.stopAllTimers();
     this.timerInterval = setInterval(() => {
       this.timeElapsed++;
       this.elements.timer.textContent = GameManager.formatTime(this.timeElapsed);
     }, 1000);
   }
 
-  stopTimer() {
+  stopAllTimers() {
     if (this.timerInterval) {
       clearInterval(this.timerInterval);
       this.timerInterval = null;
+    }
+    if (this.countdownInterval) {
+      clearInterval(this.countdownInterval);
+      this.countdownInterval = null;
+    }
+    if (this.flipTimeout) {
+      clearTimeout(this.flipTimeout);
+      this.flipTimeout = null;
+    }
+    if (this.matchTimeout) {
+      clearTimeout(this.matchTimeout);
+      this.matchTimeout = null;
     }
   }
 
@@ -241,7 +260,8 @@ class GameManager {
       card1.classList.add('shake');
       card2.classList.add('shake');
 
-      setTimeout(() => {
+      this.matchTimeout = setTimeout(() => {
+        this.matchTimeout = null;
         card1.classList.remove('flipped', 'shake');
         card2.classList.remove('flipped', 'shake');
         this.flippedCards = [];
@@ -252,7 +272,7 @@ class GameManager {
 
   endGame() {
     this.gameEnded = true;
-    this.stopTimer();
+    this.stopAllTimers();
     this.showResult();
   }
 
@@ -273,7 +293,7 @@ class GameManager {
   }
 
   handleRestart() {
-    this.stopTimer();
+    this.stopAllTimers();
     this.hideResult();
     if (this.difficulty) {
       this.startGame(this.difficulty);
@@ -293,11 +313,16 @@ class GameManager {
   }
 
   async handleSubmitScore() {
+    if (this.isSubmitting) return;
+
     const name = this.elements.playerName.value.trim();
     if (!name) {
       this.elements.playerName.focus();
       return;
     }
+
+    this.isSubmitting = true;
+    this.elements.submitScoreBtn.disabled = true;
 
     try {
       const res = await fetch('/api/leaderboard', {
@@ -315,6 +340,9 @@ class GameManager {
     } catch (e) {
       console.error('提交成绩失败:', e);
       alert('提交失败，请稍后重试');
+    } finally {
+      this.isSubmitting = false;
+      this.elements.submitScoreBtn.disabled = false;
     }
   }
 
