@@ -1,5 +1,32 @@
-const EMOJIS = ['🍎', '🍌', '🍇', '🍓', '🐶', '🐱', '🦊', '🐼'];
+const ALL_EMOJIS = [
+  '🍎', '🍌', '🍇', '🍓', '🍊', '🍉', '🍒', '🍑',
+  '🥝', '🍍', '🥭', '🍋', '🐶', '🐱', '🦊', '🐼',
+  '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🐰',
+  '🦄', '🐝', '🦋', '🐢', '🐬', '🐙', '🦀', '🐠'
+];
 
+const DIFFICULTY_CONFIG = {
+  easy: {
+    name: '简单模式',
+    size: 4,
+    pairs: 8,
+    ratings: { S: 10, A: 14, B: 20 }
+  },
+  normal: {
+    name: '普通模式',
+    size: 6,
+    pairs: 18,
+    ratings: { S: 24, A: 32, B: 44 }
+  },
+  hard: {
+    name: '困难模式',
+    size: 8,
+    pairs: 32,
+    ratings: { S: 44, A: 58, B: 80 }
+  }
+};
+
+let currentDifficulty = null;
 let cards = [];
 let flippedCards = [];
 let matchedPairs = 0;
@@ -15,15 +42,23 @@ const timerEl = document.getElementById('timer');
 const stepsEl = document.getElementById('steps');
 const countdownEl = document.getElementById('countdown');
 const restartBtn = document.getElementById('restartBtn');
+const difficultyModal = document.getElementById('difficultyModal');
 const resultModal = document.getElementById('resultModal');
 const resultTitle = document.getElementById('resultTitle');
+const resultDifficulty = document.getElementById('resultDifficulty');
 const resultRating = document.getElementById('resultRating');
 const resultSteps = document.getElementById('resultSteps');
 const resultTime = document.getElementById('resultTime');
 const playerNameInput = document.getElementById('playerName');
 const submitScoreBtn = document.getElementById('submitScoreBtn');
 const playAgainBtn = document.getElementById('playAgainBtn');
+const changeDifficultyBtn = document.getElementById('changeDifficultyBtn');
 const leaderboardEl = document.getElementById('leaderboard');
+
+function getEmojisForDifficulty(difficulty) {
+  const shuffled = shuffle([...ALL_EMOJIS]);
+  return shuffled.slice(0, DIFFICULTY_CONFIG[difficulty].pairs);
+}
 
 function shuffle(array) {
   const arr = [...array];
@@ -40,16 +75,29 @@ function formatTime(seconds) {
   return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 }
 
-function calculateRating(steps) {
-  if (steps <= 10) return 'S';
-  if (steps <= 14) return 'A';
-  if (steps <= 20) return 'B';
+function calculateRating(steps, difficulty) {
+  const config = DIFFICULTY_CONFIG[difficulty].ratings;
+  if (steps <= config.S) return 'S';
+  if (steps <= config.A) return 'A';
+  if (steps <= config.B) return 'B';
   return 'C';
 }
 
-function createBoard() {
+function showDifficultySelect() {
+  difficultyModal.classList.remove('hidden');
   boardEl.innerHTML = '';
-  cards = shuffle([...EMOJIS, ...EMOJIS]);
+  boardEl.className = 'board';
+  stopTimer();
+}
+
+function createBoard(difficulty) {
+  currentDifficulty = difficulty;
+  const config = DIFFICULTY_CONFIG[difficulty];
+  const emojis = getEmojisForDifficulty(difficulty);
+
+  boardEl.innerHTML = '';
+  boardEl.className = `board size-${config.size}`;
+  cards = shuffle([...emojis, ...emojis]);
   flippedCards = [];
   matchedPairs = 0;
   steps = 0;
@@ -76,6 +124,7 @@ function createBoard() {
     boardEl.appendChild(card);
   });
 
+  difficultyModal.classList.add('hidden');
   startCountdown();
 }
 
@@ -151,7 +200,7 @@ function checkMatch() {
     flippedCards = [];
     canFlip = true;
 
-    if (matchedPairs === EMOJIS.length) {
+    if (matchedPairs === DIFFICULTY_CONFIG[currentDifficulty].pairs) {
       endGame();
     }
   } else {
@@ -174,7 +223,9 @@ function endGame() {
 }
 
 function showResult() {
-  const rating = calculateRating(steps);
+  const rating = calculateRating(steps, currentDifficulty);
+  resultDifficulty.textContent = DIFFICULTY_CONFIG[currentDifficulty].name;
+  resultDifficulty.className = `difficulty-tag ${currentDifficulty}`;
   resultRating.textContent = rating;
   resultRating.className = `rating rating-${rating}`;
   resultSteps.textContent = steps;
@@ -242,15 +293,31 @@ async function submitScore() {
   }
 }
 
+document.querySelectorAll('.difficulty-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const difficulty = btn.dataset.difficulty;
+    createBoard(difficulty);
+  });
+});
+
 restartBtn.addEventListener('click', () => {
   stopTimer();
   hideResult();
-  createBoard();
+  if (currentDifficulty) {
+    createBoard(currentDifficulty);
+  } else {
+    showDifficultySelect();
+  }
 });
 
 playAgainBtn.addEventListener('click', () => {
   hideResult();
-  createBoard();
+  createBoard(currentDifficulty);
+});
+
+changeDifficultyBtn.addEventListener('click', () => {
+  hideResult();
+  showDifficultySelect();
 });
 
 submitScoreBtn.addEventListener('click', submitScore);
@@ -260,4 +327,4 @@ playerNameInput.addEventListener('keydown', (e) => {
 });
 
 loadLeaderboard();
-createBoard();
+showDifficultySelect();

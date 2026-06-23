@@ -38,9 +38,33 @@
     </main>
   </div>
 
+  <div id="difficultyModal" class="modal">
+    <div class="modal-content">
+      <h2>🎮 选择难度</h2>
+      <div class="difficulty-options">
+        <button class="difficulty-btn" data-difficulty="easy">
+          <div class="difficulty-icon">😊</div>
+          <div class="difficulty-name">简单模式</div>
+          <div class="difficulty-desc">4×4 棋盘 · 8对emoji</div>
+        </button>
+        <button class="difficulty-btn" data-difficulty="normal">
+          <div class="difficulty-icon">🤔</div>
+          <div class="difficulty-name">普通模式</div>
+          <div class="difficulty-desc">6×6 棋盘 · 18对emoji</div>
+        </button>
+        <button class="difficulty-btn" data-difficulty="hard">
+          <div class="difficulty-icon">😈</div>
+          <div class="difficulty-name">困难模式</div>
+          <div class="difficulty-desc">8×8 棋盘 · 32对emoji</div>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div id="resultModal" class="modal hidden">
     <div class="modal-content">
       <h2 id="resultTitle">🎉 恭喜通关！</h2>
+      <div class="difficulty-tag" id="resultDifficulty"></div>
       <div id="resultRating" class="rating">S</div>
       <div class="result-stats">
         <p>步数: <span id="resultSteps">0</span></p>
@@ -53,6 +77,7 @@
       <div class="modal-buttons">
         <button id="submitScoreBtn" class="btn btn-primary">📤 提交成绩</button>
         <button id="playAgainBtn" class="btn btn-secondary">🔄 再来一局</button>
+        <button id="changeDifficultyBtn" class="btn btn-secondary">🎯 更换难度</button>
       </div>
     </div>
   </div>
