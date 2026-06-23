@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>记忆翻牌小游戏</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header class="top-bar">
+      <h1>🎴 记忆翻牌</h1>
+      <div class="stats">
+        <div class="stat-item">
+          <span class="stat-label">⏱ 用时</span>
+          <span id="timer" class="stat-value">00:00</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">👆 步数</span>
+          <span id="steps" class="stat-value">0</span>
+        </div>
+        <button id="restartBtn" class="btn btn-primary">🔄 重新开始</button>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <div class="game-area">
+        <div id="countdown" class="countdown hidden">2</div>
+        <div id="board" class="board"></div>
+      </div>
+
+      <aside class="leaderboard-panel">
+        <h2>🏆 排行榜</h2>
+        <ol id="leaderboard" class="leaderboard-list">
+          <li class="empty">暂无记录</li>
+        </ol>
+      </aside>
+    </main>
+  </div>
+
+  <div id="resultModal" class="modal hidden">
+    <div class="modal-content">
+      <h2 id="resultTitle">🎉 恭喜通关！</h2>
+      <div id="resultRating" class="rating">S</div>
+      <div class="result-stats">
+        <p>步数: <span id="resultSteps">0</span></p>
+        <p>用时: <span id="resultTime">00:00</span></p>
+      </div>
+      <div class="name-input">
+        <label for="playerName">输入昵称上榜:</label>
+        <input type="text" id="playerName" maxlength="10" placeholder="请输入昵称">
+      </div>
+      <div class="modal-buttons">
+        <button id="submitScoreBtn" class="btn btn-primary">📤 提交成绩</button>
+        <button id="playAgainBtn" class="btn btn-secondary">🔄 再来一局</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
